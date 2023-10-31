@@ -17,7 +17,7 @@ func init() {
 		},
 	}
 
-	cmdKeys.AddCommand(keysSub()...)
+	cmdKeys.AddCommand(walletSub()...)
 
 	RootCmd.AddCommand(cmdKeys)
 }
@@ -26,7 +26,7 @@ const (
 	defaultPath = "m/44'/60'/0'/0/0" //60
 )
 
-func keysSub() []*cobra.Command {
+func walletSub() []*cobra.Command {
 	cmdGen := &cobra.Command{
 		Use:   "gen <path>",
 		Short: "gen a new wallet by path",
