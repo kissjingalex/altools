@@ -2,6 +2,10 @@ package chain
 
 import "math/big"
 
+const (
+	DefaultChain = "Ethereum"
+)
+
 type WalletChainConfig struct {
 	Chain    string
 	ChainId  *big.Int
@@ -52,4 +56,8 @@ func init() {
 	for _, config := range WCConfigList {
 		WCConfigMap[config.Chain] = config
 	}
+}
+
+func GetWalletChainConfig(chain string) *WalletChainConfig {
+	return WCConfigMap[chain]
 }

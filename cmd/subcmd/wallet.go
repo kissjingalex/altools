@@ -45,6 +45,7 @@ func walletSub() []*cobra.Command {
 			}
 
 			fmt.Printf("Mnemonic   = %s\n", acc.Mnemonic)
+			fmt.Printf("Path       = %s\n", acc.Path)
 			fmt.Printf("Address    = %s\n", acc.Address)
 			fmt.Printf("PrivateKey = %s\n", acc.PrivateKey)
 

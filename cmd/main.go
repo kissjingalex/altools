@@ -2,6 +2,7 @@ package main
 
 import (
 	"altools/cmd/subcmd"
+	"altools/pkg/chain"
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
@@ -34,4 +35,12 @@ func main() {
 	})
 
 	subcmd.Execute()
+
+	release()
+}
+
+// 释放资源
+func release() {
+	chainSvc := chain.NewChainService()
+	chainSvc.Release()
 }
