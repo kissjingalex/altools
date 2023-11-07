@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
+	"github.com/ethereum/go-ethereum/crypto"
 	"strconv"
 )
 
@@ -40,4 +41,9 @@ func (svc *CryptoService) GenKey(size int) (s string, err error) {
 	challenge := make([]byte, size) // block size
 	_, err = rand.Read(challenge)
 	return string(challenge), nil
+}
+
+func (svc *CryptoService) Keccak(content string) (s string, err error) {
+	hash := crypto.Keccak256Hash([]byte(content))
+	return hex.EncodeToString(hash.Bytes()), nil
 }

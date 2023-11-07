@@ -2,6 +2,12 @@ package wallet
 
 import (
 	"altools/plugins/blockchain/hdwallet"
+	"crypto/ecdsa"
+	"crypto/rand"
+	"errors"
+	"fmt"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/google/uuid"
 	"github.com/tyler-smith/go-bip39"
 )
 
@@ -46,4 +52,24 @@ func (svc *WalletService) GenMnemonic() string {
 	mnemonic, _ := bip39.NewMnemonic(entropy)
 
 	return mnemonic
+}
+
+func (svc *WalletService) GenKey() (*Key, error) {
+	privateKeyECDSA, err := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("Could not create random uuid: %v", err))
+	}
+
+	key := &Key{
+		Id:         id,
+		Address:    crypto.PubkeyToAddress(privateKeyECDSA.PublicKey),
+		PrivateKey: privateKeyECDSA,
+	}
+
+	return key, nil
 }

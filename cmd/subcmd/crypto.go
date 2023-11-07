@@ -134,5 +134,19 @@ func cryptoSub() []*cobra.Command {
 		},
 	}
 
-	return []*cobra.Command{cmdSalt, cmdKey, cmdAesEnc, cmdAesDec}
+	cmdKeccak := &cobra.Command{
+		Use:   "keccak <content>",
+		Short: "keccak data string to hex",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			svc := crypt.NewCryptoService()
+			s, _ := svc.Keccak(args[0])
+
+			fmt.Printf("content = %s\n", args[0])
+			fmt.Printf("hash    = %s\n", s)
+			return nil
+		},
+	}
+
+	return []*cobra.Command{cmdSalt, cmdKey, cmdAesEnc, cmdAesDec, cmdKeccak}
 }

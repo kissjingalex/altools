@@ -7,6 +7,7 @@ require (
 	github.com/btcsuite/btcd/btcutil v1.1.3
 	github.com/ethereum/go-ethereum v1.13.4
 	github.com/fatih/color v1.13.0
+	github.com/google/uuid v1.3.0
 	github.com/json-iterator/go v1.1.12
 	github.com/shopspring/decimal v1.3.1
 	github.com/spf13/cobra v1.5.0
