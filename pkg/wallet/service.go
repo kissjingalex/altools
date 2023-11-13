@@ -20,8 +20,10 @@ func NewWalletService() *WalletService {
 	return service
 }
 
-func (svc *WalletService) GenAccount(path string) (*Account, error) {
-	mnemonic := svc.GenMnemonic()
+func (svc *WalletService) GenAccount(path string, mnemonic string) (*Account, error) {
+	if len(mnemonic) == 0 {
+		mnemonic = svc.GenMnemonic()
+	}
 
 	wallet, err := hdwallet.NewFromMnemonic(mnemonic)
 	if err != nil {

@@ -54,17 +54,22 @@ func walletSub() []*cobra.Command {
 	}
 
 	cmdGen := &cobra.Command{
-		Use:   "gen <path>",
-		Short: "gen a new wallet by path",
-		//Args:  cobra.ExactArgs(1),
+		Use:   "gen <path> <mnemonic>",
+		Short: "gen a new wallet by path. use random mnemonic if not given",
+		Args:  cobra.RangeArgs(0, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			path := defaultPath
 			if len(args) > 0 {
 				path = args[0]
 			}
 
+			mnemonic := ""
+			if len(args) > 1 {
+				mnemonic = args[1]
+			}
+
 			svc := wallet.NewWalletService()
-			acc, err := svc.GenAccount(path)
+			acc, err := svc.GenAccount(path, mnemonic)
 			if err != nil {
 				fmt.Printf("Fail to gen a new wallet account, error=%v\n", err)
 				return nil

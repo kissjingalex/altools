@@ -135,12 +135,17 @@ func cryptoSub() []*cobra.Command {
 	}
 
 	cmdKeccak := &cobra.Command{
-		Use:   "keccak <content>",
-		Short: "keccak data string to hex",
-		Args:  cobra.ExactArgs(1),
+		Use:   "keccak <content> <type>",
+		Short: "keccak data string to hex, default type is uint256. available types : address, uint256",
+		Args:  cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			dataType := "uint256"
+			if len(args) > 1 {
+				dataType = args[1]
+			}
+
 			svc := crypt.NewCryptoService()
-			s, _ := svc.Keccak(args[0])
+			s, _ := svc.Keccak(dataType, args[0])
 
 			fmt.Printf("content = %s\n", args[0])
 			fmt.Printf("hash    = %s\n", s)
