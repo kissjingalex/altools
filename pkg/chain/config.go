@@ -39,6 +39,13 @@ var WCConfigList = []*WalletChainConfig{
 		EndPoint: "https://eth.llamarpc.com",
 	},
 	{
+		Chain:    "Goerli",
+		ChainId:  big.NewInt(5),
+		CoinType: 60,
+		Index:    0, // 2,
+		EndPoint: "https://api.zan.top/node/v1/eth/goerli/public",
+	},
+	{
 		Chain:    "Bitcoin",
 		CoinType: 0,
 		Index:    0,

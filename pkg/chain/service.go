@@ -19,7 +19,17 @@ func NewChainService() *ChainService {
 	return service
 }
 
+// 支持多链
 var clientMap = make(map[string]*ethclient.Client)
+
+// 交易相关的常量
+var gwei = big.NewInt(1000000000)
+
+var DefaultGasPrice = big.NewInt(20000000) // 0.02 Gwei
+var DefaultGasLimit = uint64(300000)
+
+var DefaultGasPriceForTransfer = big.NewInt(2000000) // 0.002 Gwei
+var DefaultGasLimitForTransfer = uint64(30000)       // 21000  27329（转多钱钱包）
 
 func (svc *ChainService) Release() {
 	if len(clientMap) == 0 {

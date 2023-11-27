@@ -21,9 +21,9 @@ var (
 			return nil
 		},
 		Long: fmt.Sprintf(`
-CLI interface to Tron blockchain
+CLI interface to alex tools
 
-%s`, g("type 'tronclt --help' for details")),
+%s`, g("type 'altools --help' for details")),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cmd.Help()
 			return nil
