@@ -23,7 +23,7 @@ func (svc *CryptoService) AESEncrypt(data, key, iv []byte) ([]byte, error) {
 	encrypted := make([]byte, len(content))
 
 	if len(iv) != block.BlockSize() {
-		return nil, errors.New("cipher CBC: IV length must equal block size")
+		return nil, errors.New("cipher CBC: IV length must equal block size") //一般是16
 	}
 
 	aesDecrypt := cipher.NewCBCEncrypter(block, iv)

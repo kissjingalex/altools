@@ -26,9 +26,10 @@ type MintResult struct {
 	GasFee *big.Int
 
 	Signature *chain.TxSignature
+	SignBytes string
 }
 
-func (svc *InscriptService) Mint(chainType string, senderPrivateKey string, toAddress string, data string) (*MintResult, error) {
+func (svc *InscriptService) Mint(chainType string, senderPrivateKey string, toAddress string, data string, isMock bool) (*MintResult, error) {
 	dataBytes, err := hexutil.Decode(data)
 	if err != nil {
 		return nil, err
@@ -40,7 +41,7 @@ func (svc *InscriptService) Mint(chainType string, senderPrivateKey string, toAd
 		ToAddress: toAddress,
 		Value:     big.NewInt(0),
 		Data:      dataBytes,
-	})
+	}, isMock)
 
 	if err != nil {
 		return nil, err
@@ -54,5 +55,6 @@ func (svc *InscriptService) Mint(chainType string, senderPrivateKey string, toAd
 		Gas:         tr.Gas,
 		GasFee:      tr.GasFee,
 		Signature:   tr.Signature,
+		SignBytes:   tr.SignBytes,
 	}, nil
 }

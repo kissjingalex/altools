@@ -48,7 +48,7 @@ func inscriptSub() []*cobra.Command {
 			data := args[2]
 
 			svc := inscript.NewInscriptService()
-			rs, err := svc.Mint(chainType, privateKey, toAddress, data)
+			rs, err := svc.Mint(chainType, privateKey, toAddress, data, false)
 			if err != nil {
 				fmt.Printf("Fail to mint, error = %v\n", err)
 				return nil
@@ -61,5 +61,35 @@ func inscriptSub() []*cobra.Command {
 		},
 	}
 
-	return []*cobra.Command{cmdMint}
+	cmdMintMock := &cobra.Command{
+		Use:   "mintMock <chainType> <toAddress> <contentInHex>",
+		Short: "mock to mint an inscription for text type. available chain type: Goerli、Base_Goerli、Ethereum ",
+		Args:  cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			privateKey := os.Getenv(ENV_WALLET_PRIVATE_KEY)
+			if len(privateKey) == 0 {
+				fmt.Println("please set env WALLET_PRIVATE_KEY")
+				return nil
+			}
+			fmt.Printf("privateKey=%s\n", privateKey)
+
+			chainType := args[0]
+			toAddress := args[1]
+			data := args[2]
+
+			svc := inscript.NewInscriptService()
+			rs, err := svc.Mint(chainType, privateKey, toAddress, data, true)
+			if err != nil {
+				fmt.Printf("Fail to mint, error = %v\n", err)
+				return nil
+			}
+
+			fmt.Println("Mint(Mock) successfully! result is :")
+			spew.Dump(rs)
+
+			return nil
+		},
+	}
+
+	return []*cobra.Command{cmdMint, cmdMintMock}
 }

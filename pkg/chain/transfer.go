@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
@@ -29,6 +30,7 @@ type TransferResult struct {
 	GasFee      *big.Int
 
 	Signature *TxSignature
+	SignBytes string
 }
 
 type TxSignature struct {
@@ -37,7 +39,7 @@ type TxSignature struct {
 	S *big.Int
 }
 
-func (s *ChainService) Transfer(chainType string, senderPrivateKey string, opt *TransferOpt) (*TransferResult, error) {
+func (s *ChainService) Transfer(chainType string, senderPrivateKey string, opt *TransferOpt, isMock bool) (*TransferResult, error) {
 	senderPriKey, err := crypto.HexToECDSA(senderPrivateKey)
 	if err != nil {
 		return nil, err
@@ -77,10 +79,15 @@ func (s *ChainService) Transfer(chainType string, senderPrivateKey string, opt *
 		Value:    opt.Value,
 	})
 
-	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(txContext.ChainId), senderPriKey)
+	signer := types.NewEIP155Signer(txContext.ChainId)
+	signedTx, err := types.SignTx(tx, signer, senderPriKey)
 	if err != nil {
 		return nil, err
 	}
+
+	//获取签名bytes
+	h := signer.Hash(tx)
+	sigBytes, err := crypto.Sign(h[:], senderPriKey)
 
 	vt, rt, st := signedTx.RawSignatureValues()
 	sig := &TxSignature{
@@ -89,9 +96,11 @@ func (s *ChainService) Transfer(chainType string, senderPrivateKey string, opt *
 		S: st,
 	}
 
-	err = txContext.Client.SendTransaction(context.Background(), signedTx)
-	if err != nil {
-		return nil, err
+	if !isMock {
+		err = txContext.Client.SendTransaction(context.Background(), signedTx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &TransferResult{
@@ -102,5 +111,6 @@ func (s *ChainService) Transfer(chainType string, senderPrivateKey string, opt *
 		Gas:         gas,
 		GasFee:      gasFee,
 		Signature:   sig,
+		SignBytes:   hexutil.Encode(sigBytes),
 	}, nil
 }
