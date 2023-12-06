@@ -5,8 +5,8 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-// from types/transaction_signing.go
-func decodeSignature(sig []byte) (r, s [32]byte, v uint8) {
+// DecodeSignature from types/transaction_signing.go
+func DecodeSignature(sig []byte) (r, s [32]byte, v uint8) {
 	if len(sig) != crypto.SignatureLength {
 		panic(fmt.Sprintf("wrong size for signature: got %d, want %d", len(sig), crypto.SignatureLength))
 	}

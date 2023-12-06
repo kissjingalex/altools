@@ -35,7 +35,7 @@ type TxContext struct {
 	GasPrice     *big.Int
 }
 
-func prepareContext(config *ChainConfig) (*TxContext, error) {
+func PrepareContext(config *ChainConfig) (*TxContext, error) {
 	var client *ethclient.Client
 	if config.WsGateWay != "" {
 		var err error

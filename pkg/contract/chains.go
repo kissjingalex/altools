@@ -2,7 +2,7 @@ package contract
 
 import "math/big"
 
-var localChainConfig = &ChainConfig{
+var LocalChainConfig = &ChainConfig{
 	GateWay:      "http://127.0.0.1:8545",
 	WsGateWay:    "",
 	ContractAddr: "",
@@ -11,7 +11,7 @@ var localChainConfig = &ChainConfig{
 	ChainId:      big.NewInt(31337),
 }
 
-var goerliChainConfig = &ChainConfig{
+var GoerliChainConfig = &ChainConfig{
 	GateWay:      "https://rpc.ankr.com/eth_goerli/b0c6c54f3dc9cc51677e475fe355253c097e527a62d0cb188f1c882561ae1417",
 	WsGateWay:    "",
 	ContractAddr: "",
@@ -20,7 +20,7 @@ var goerliChainConfig = &ChainConfig{
 	ChainId:      big.NewInt(5),
 }
 
-var baseGoerliChainConfig = &ChainConfig{
+var BaseGoerliChainConfig = &ChainConfig{
 	GateWay:      "https://rpc.ankr.com/base_goerli/b0c6c54f3dc9cc51677e475fe355253c097e527a62d0cb188f1c882561ae1417",
 	WsGateWay:    "",
 	ContractAddr: "",
@@ -40,7 +40,7 @@ type ChainUserGroup struct {
 	Buyer  ChainUser
 }
 
-var localUserGroup = &ChainUserGroup{
+var LocalUserGroup = &ChainUserGroup{
 	Admin: ChainUser{
 		Address:    "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
 		PrivateKey: "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
@@ -55,7 +55,7 @@ var localUserGroup = &ChainUserGroup{
 	},
 }
 
-var baseGoerliUserGroup = &ChainUserGroup{
+var BaseGoerliUserGroup = &ChainUserGroup{
 	Admin: ChainUser{
 		Address:    "0x9c52262e33C66a347C063D02B1D5A5F7897523f7",
 		PrivateKey: "c08a70581ef8f3b3e12beec950facea6c19bee0df46a27eac0777520d76e1063",

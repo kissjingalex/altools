@@ -1,13 +1,17 @@
-package contract
+package v2
 
 import (
+	"altools/pkg/contract"
+	cjson "altools/plugins/json"
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
+	"log"
 	"math/big"
 	"testing"
 	"time"
@@ -51,11 +55,11 @@ var typesStandard = apitypes.Types{
 	},
 	"EthscriptionOrder": {
 		{
-			Name: "signer",
+			Name: "seller",
 			Type: "address",
 		},
 		{
-			Name: "creator",
+			Name: "buyer",
 			Type: "address",
 		},
 		{
@@ -90,20 +94,12 @@ var typesStandard = apitypes.Types{
 			Name: "protocolFeeDiscounted", // x /10000
 			Type: "uint16",
 		},
-		{
-			Name: "creatorFee",
-			Type: "uint16",
-		},
-		{
-			Name: "params",
-			Type: "bytes",
-		},
 	},
 }
 
 // 允许切换chain
-var targetChainConfig = BaseGoerliChainConfig // LocalChainConfig
-var targetUserGroup = BaseGoerliUserGroup     // LocalUserGroup
+var targetChainConfig = contract.BaseGoerliChainConfig // BaseGoerliChainConfig // LocalChainConfig
+var targetUserGroup = contract.BaseGoerliUserGroup     // BaseGoerliUserGroup     // LocalUserGroup
 
 const (
 	CURRENCY_ADDRESS = "0x0000000000000000000000000000000000000000"
@@ -111,12 +107,12 @@ const (
 	// local chain
 	//ETHSCRIPTION_ID  = "0xdb9580c13554659ea1fb7530cdb5c3049f3af68789986433443483f7b9293880"
 	//CHAIN_ID         = 31337
-	//CONTRACT_ADDRESS = "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853" // deployed contract
+	//CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3" // deployed contract
 
 	// base_goerli
-	ETHSCRIPTION_ID  = "0x223d3ab70c75c58b2199d902e0a218ec7d0487b4b86c85a5ccb25dae71224ef4"
+	ETHSCRIPTION_ID  = "0x7aaed8765db0419096e2d81b22bc06a83b9205aed3448d2fb346b01a1fe7c9d7" // "0x223d3ab70c75c58b2199d902e0a218ec7d0487b4b86c85a5ccb25dae71224ef4"
 	CHAIN_ID         = 84531
-	CONTRACT_ADDRESS = "0x608807d1489aD49373d02855bbcf10f6C1F240C3" // deployed contract
+	CONTRACT_ADDRESS = "0x59F4A5239a2DF011D4c274eE7Ba5C1490d010E4A" // deployed contract
 )
 
 var domainStandard = apitypes.TypedDataDomain{
@@ -142,37 +138,37 @@ func toBytes32(bs []byte) [32]byte {
 	return rs
 }
 
-func createOrder() (OrderTypesEthscriptionOrder, map[string]interface{}) {
-	signer := targetUserGroup.Seller // 卖家签名这个订单
-	userAddress := signer.Address
-	userAddr := common.HexToAddress(userAddress)
+func createOrder() (OrderTypesV2EthscriptionOrder, map[string]interface{}) {
+	seller := targetUserGroup.Seller // 卖家签名这个订单
+	buyer := targetUserGroup.Buyer
+
+	sellerAddr := common.HexToAddress(seller.Address)
+	buyerAddr := common.HexToAddress(buyer.Address)
 
 	ethscriptionId, _ := hexutil.Decode(ETHSCRIPTION_ID)
 
 	startTime := time.Now().Unix() - 20*60 //最好不要取当前时间
 	endTime := startTime + 60*60           // 1小时以内
 
-	order := OrderTypesEthscriptionOrder{
-		Signer:                userAddr,
-		Creator:               userAddr, //这里假设creator也是signer，不影响订单
+	order := OrderTypesV2EthscriptionOrder{
+		Seller:                sellerAddr,
+		Buyer:                 buyerAddr,
 		EthscriptionId:        toBytes32(ethscriptionId),
 		Quantity:              big.NewInt(1),
 		Currency:              common.HexToAddress(CURRENCY_ADDRESS),
 		Price:                 big.NewInt(100000000000), // in wei, 100gwei
-		Nonce:                 big.NewInt(1),            //order id
+		Nonce:                 big.NewInt(2),            // if order nonce is same, it is unable to repeat execution of the order.
 		StartTime:             uint64(startTime),
 		EndTime:               uint64(endTime),
 		ProtocolFeeDiscounted: uint16(100),
-		CreatorFee:            0,
-		Params:                nil,
 		V:                     0,
 		R:                     [32]byte{},
 		S:                     [32]byte{},
 	}
 
 	orderMap := map[string]interface{}{
-		"signer":                order.Signer.Hex(),
-		"creator":               order.Creator.Hex(),
+		"seller":                order.Seller.Hex(),
+		"buyer":                 order.Buyer.Hex(),
 		"ethscriptionId":        order.EthscriptionId,
 		"quantity":              order.Quantity,
 		"currency":              order.Currency.Hex(),
@@ -181,8 +177,6 @@ func createOrder() (OrderTypesEthscriptionOrder, map[string]interface{}) {
 		"startTime":             big.NewInt(int64(order.StartTime)),
 		"endTime":               big.NewInt(int64(order.EndTime)),
 		"protocolFeeDiscounted": big.NewInt(int64(order.ProtocolFeeDiscounted)),
-		"creatorFee":            big.NewInt(int64(order.CreatorFee)),
-		"params":                order.Params,
 	}
 
 	return order, orderMap
@@ -223,14 +217,14 @@ func TestMarket_SignLocal(t *testing.T) {
 }
 
 func TestMarket_ExecuteOrder(t *testing.T) {
-	txContext, err := PrepareContext(targetChainConfig)
+	txContext, err := contract.PrepareContext(targetChainConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer txContext.Close()
 
 	contractAddr := common.HexToAddress(CONTRACT_ADDRESS)
-	defoMarket, err := NewDefoMarket(contractAddr, txContext.EthClient)
+	defoMarket, err := NewDefoMarketV2(contractAddr, txContext.EthClient)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -257,14 +251,14 @@ func TestMarket_ExecuteOrder(t *testing.T) {
 	t.Logf("local signHash=%s\n", hexutil.Encode(signHash)) //digest
 
 	// chain digest
-	//digestOnChain, err := defoMarket.GetOrderTypedDataHash(callOpts, order)
-	//if err != nil {
-	//	t.Fatal(err)
-	//}
-	//t.Logf("chain signHash=%s", hexutil.Encode(digestOnChain[:]))
+	digestOnChain, err := defoMarket.GetOrderTypedDataHash(callOpts, order)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("chain signHash=%s", hexutil.Encode(digestOnChain[:]))
 
-	// local sign ==================== sign by Seller
-	signer := targetUserGroup.Seller
+	// local sign ==================== sign by Admin
+	signer := targetUserGroup.Admin
 	privateKey, err := crypto.HexToECDSA(signer.PrivateKey)
 	if err != nil {
 		t.Fatal(err)
@@ -278,28 +272,30 @@ func TestMarket_ExecuteOrder(t *testing.T) {
 	t.Logf("signature=%s", hexutil.Encode(signature))
 
 	// complete order detail with signature
-	r, s, v := DecodeSignature(signature)
+	r, s, v := contract.DecodeSignature(signature)
 	order.R = r
 	order.S = s
 	order.V = v
+
+	fmt.Println("\n=====================order debug=====================")
 	spew.Dump(order)
+	fmt.Println("=====================order debug end=====================")
 
 	// execute order, for now, only one user
-	// notice: it is presumed to be executed by buyer
-	buyer := targetUserGroup.Buyer
-	buyerPrivateKey, err := crypto.HexToECDSA(buyer.PrivateKey)
+	// notice: it is presumed to be executed by admin
+	// it is no matter who send the transaction，the key is the typed data signature.
+	caller := targetUserGroup.Admin
+	callerPrivateKey, err := crypto.HexToECDSA(caller.PrivateKey)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	txOpts, err := txContext.GetTransactOpts(buyerPrivateKey, order.Price)
+	txOpts, err := txContext.GetTransactOpts(callerPrivateKey, order.Price)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	recipient := common.HexToAddress(targetUserGroup.Buyer.Address) //买家接受
-	var args2 []byte
-	txExec, err := defoMarket.ExecuteEthscriptionOrder(txOpts, order, recipient, args2)
+	txExec, err := defoMarket.ExecuteEthscriptionOrder(txOpts, order)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -340,14 +336,14 @@ func createWithdrawEthscription() (WithdrawEthscription, map[string]interface{})
 }
 
 func TestMarket_SighWithdraw(t *testing.T) {
-	txContext, err := PrepareContext(targetChainConfig)
+	txContext, err := contract.PrepareContext(targetChainConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer txContext.Close()
 
 	contractAddr := common.HexToAddress(domainStandard.VerifyingContract)
-	defoMarket, err := NewDefoMarket(contractAddr, txContext.EthClient)
+	defoMarket, err := NewDefoMarketV2(contractAddr, txContext.EthClient)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -390,22 +386,58 @@ func TestMarket_SighWithdraw(t *testing.T) {
 
 	t.Logf("signature=%s", hexutil.Encode(signature))
 
-	// executed by seller
+	// executed by admin
+	caller := targetUserGroup.Admin
+	callerPrivateKey, err := crypto.HexToECDSA(caller.PrivateKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	txOpts, err := txContext.GetTransactOpts(callerPrivateKey, big.NewInt(0)) // no payment
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//recieve by seller
 	seller := targetUserGroup.Seller
-	sellerPrivateKey, err := crypto.HexToECDSA(seller.PrivateKey)
+	recipient := common.HexToAddress(seller.Address)
+
+	txExec, err := defoMarket.WithdrawEthscription(txOpts, we.EthscriptionId, recipient, we.Expiration, signature)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	txOpts, err := txContext.GetTransactOpts(sellerPrivateKey, big.NewInt(0)) // no payment
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	txExec, err := defoMarket.WithdrawEthscription(txOpts, we.EthscriptionId, we.Expiration, signature)
-	if err != nil {
-		t.Fatal(err)
-	}
+	fmt.Println("\n=====================tx debug=====================")
+	spew.Dump(txExec)
+	fmt.Println("=====================tx debug end=====================")
 
 	txContext.ShowTxDetail(txExec)
+}
+
+func TestMarket_sub(t *testing.T) {
+	client, err := ethclient.Dial(targetChainConfig.WsGateWay)
+	if err != nil {
+		panic(err)
+	}
+
+	contractAddr := common.HexToAddress(CONTRACT_ADDRESS)
+	contract, err := NewDefoMarketV2(contractAddr, client)
+
+	tradeLog := make(chan *DefoMarketV2EthscriptionsProtocolTransferEthscriptionForPreviousOwner)
+	sub, err := contract.WatchEthscriptionsProtocolTransferEthscriptionForPreviousOwner(nil, tradeLog, nil, nil, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for {
+		select {
+		case err0 := <-sub.Err():
+			if err0 != nil {
+				fmt.Printf("err: %v\n", err0)
+			}
+		case eventLog := <-tradeLog:
+			bs, _ := cjson.JSON.Marshal(eventLog)
+			fmt.Printf("event Trade: %s\n", string(bs))
+		}
+	}
 }

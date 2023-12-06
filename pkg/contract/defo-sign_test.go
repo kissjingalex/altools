@@ -23,7 +23,7 @@ var signMessageStandard = map[string]interface{}{
 }
 
 func TestBase_Balance(t *testing.T) {
-	ctx, err := prepareContext(localChainConfig)
+	ctx, err := PrepareContext(LocalChainConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,7 +38,7 @@ func TestBase_Balance(t *testing.T) {
 }
 
 func TestDefoSign_OrderHash(t *testing.T) {
-	ctx, err := prepareContext(localChainConfig)
+	ctx, err := PrepareContext(LocalChainConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,7 +87,7 @@ func TestDefoSign_OrderHash(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	r, s, v := decodeSignature(signature)
+	r, s, v := DecodeSignature(signature)
 	order.R = r
 	order.S = s
 	order.V = v
@@ -101,7 +101,7 @@ func TestDefoSign_OrderHash(t *testing.T) {
 }
 
 func TestDefiSign_GetDomainSeparator(t *testing.T) {
-	ctx, err := prepareContext(localChainConfig)
+	ctx, err := PrepareContext(LocalChainConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
