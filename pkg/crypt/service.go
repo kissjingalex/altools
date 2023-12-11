@@ -5,6 +5,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"strconv"
 
@@ -48,7 +50,7 @@ func (svc *CryptoService) GenKey(size int) (s string, err error) {
 
 // Keccak https://github.com/miguelmota/go-solidity-sha3
 // available types :"address", "bytes1", "uint8[]", "bytes32", "uint256", "address[]", "uint32"
-func (svc *CryptoService) Keccak(dataType, content string) (s string, err error) {
+func (svc *CryptoService) KeccakDeprecated(dataType, content string) (s string, err error) {
 	var value interface{}
 	if dataType == "uint256" {
 		n := new(big.Int)
@@ -68,7 +70,7 @@ func (svc *CryptoService) Keccak(dataType, content string) (s string, err error)
 	return hex.EncodeToString(hash), nil
 }
 
-//func (svc *CryptoService) Keccak(content string) (s string, err error) {
-//	hash := crypto.Keccak256Hash([]byte(content))
-//	return hex.EncodeToString(hash.Bytes()), nil
-//}
+func (svc *CryptoService) Keccak(content string) (s string, err error) {
+	bs := crypto.Keccak256([]byte(content))
+	return hexutil.Encode(bs), nil
+}
