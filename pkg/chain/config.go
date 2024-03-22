@@ -1,9 +1,14 @@
 package chain
 
-import "math/big"
+import (
+	"fmt"
+	"math/big"
+)
 
 const (
 	DefaultChain = "Ethereum"
+
+	pathFormat = "m/44'/%d'/0'/0/%d"
 )
 
 type WalletChainConfig struct {
@@ -67,4 +72,8 @@ func init() {
 
 func GetWalletChainConfig(chain string) *WalletChainConfig {
 	return WCConfigMap[chain]
+}
+
+func (c *WalletChainConfig) GenWalletPath() string {
+	return fmt.Sprintf(pathFormat, c.CoinType, c.Index)
 }

@@ -1,6 +1,7 @@
 package subcmd
 
 import (
+	"altools/pkg/tron"
 	"altools/pkg/wallet"
 	"encoding/hex"
 	"fmt"
@@ -25,7 +26,8 @@ func init() {
 }
 
 const (
-	defaultPath = "m/44'/60'/0'/0/0" //60
+	defaultPath     = "m/44'/60'/0'/0/0" //60
+	defaultTronPath = "m/44'/195'/0'/0/0"
 )
 
 func walletSub() []*cobra.Command {
@@ -84,5 +86,40 @@ func walletSub() []*cobra.Command {
 		},
 	}
 
-	return []*cobra.Command{cmdGen, cmdNewKey}
+	cmdGenTron := &cobra.Command{
+		Use:   "genTron <mnemonic>",
+		Short: "genTron a new wallet for tron. use random mnemonic if not given",
+		Args:  cobra.RangeArgs(0, 1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			path := defaultTronPath
+
+			mnemonic := ""
+			if len(args) > 0 {
+				mnemonic = args[1]
+			}
+
+			svc := wallet.NewWalletService()
+			acc, err := svc.GenAccount(path, mnemonic)
+			if err != nil {
+				fmt.Printf("Fail to gen a new wallet account, error=%v\n", err)
+				return nil
+			}
+
+			tronAddress, err := tron.NewTronService().ToTronAddress(acc.Address)
+			if err != nil {
+				fmt.Printf("Fail gen convert to tron address, error=%v\n", err)
+				return nil
+			}
+
+			fmt.Printf("Mnemonic    = %s\n", acc.Mnemonic)
+			fmt.Printf("Path        = %s\n", acc.Path)
+			fmt.Printf("Address     = %s\n", acc.Address)
+			fmt.Printf("tronAddress = %s\n", tronAddress)
+			fmt.Printf("PrivateKey  = %s\n", acc.PrivateKey)
+
+			return nil
+		},
+	}
+
+	return []*cobra.Command{cmdGen, cmdNewKey, cmdGenTron}
 }
