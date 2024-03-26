@@ -59,5 +59,46 @@ func tronSub() []*cobra.Command {
 		},
 	}
 
-	return []*cobra.Command{cmdToTronAddr, cmdToEthAddr}
+	cmdAccount := &cobra.Command{
+		Use:   "account <address>",
+		Short: "get account info for user tron address",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			addr := args[0]
+
+			svc := tron.NewTronService()
+			acc, err := svc.GetAccountInfo(addr)
+			if err != nil {
+				fmt.Printf("fail to get account info for tron address, error = %v\n", err)
+				return nil
+			}
+			fmt.Printf("Address   = %s\n", acc.Address)
+			fmt.Printf("Type      = %d\n", acc.Type)
+			fmt.Printf("Balance   = %s\n", acc.Balance)
+			fmt.Printf("Allowance = %s\n", acc.Allowance)
+			return nil
+		},
+	}
+
+	cmdUsdt := &cobra.Command{
+		Use:   "usdt <address>",
+		Short: "query usdt balance for user tron address",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			addr := args[0]
+
+			svc := tron.NewTronService()
+			rs, err := svc.GetUsdtBalance(addr)
+			if err != nil {
+				fmt.Printf("fail to get account info for tron address, error = %v\n", err)
+				return nil
+			}
+			fmt.Printf("Address = %s\n", addr)
+			fmt.Printf("Value   = %s\n", rs.Value.String())
+			fmt.Printf("Amount  = %s\n", rs.Amount.String())
+			return nil
+		},
+	}
+
+	return []*cobra.Command{cmdToTronAddr, cmdToEthAddr, cmdAccount, cmdUsdt}
 }

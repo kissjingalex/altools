@@ -43,6 +43,16 @@ func TestAddress(t *testing.T) {
 	t.Logf("ethAddr = %s", ethAddr)
 }
 
+func TestTronService_GetAccontInfo(t *testing.T) {
+	addr := "TRkyRH7YVH59MRxKCpHoTG3M2dGo3Cxccb"
+	svc := NewTronService()
+	rs, err := svc.GetAccountInfo(addr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("rs = %v", rs)
+}
+
 func TestTronService_GetUsdtBalance(t *testing.T) {
 	addr := "TRkyRH7YVH59MRxKCpHoTG3M2dGo3Cxccb"
 	svc := NewTronService()

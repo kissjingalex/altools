@@ -83,6 +83,33 @@ func (svc *TronService) ToEthAddress(addr string) (string, error) {
 	return common.HexToAddress(ethAddr).Hex(), nil
 }
 
+const (
+	AccountType_Normal     = 0
+	AccountType_AssetIssue = 1
+	AccountType_Contract   = 2
+)
+
+type AccountInfo struct {
+	Address   string
+	Type      int32
+	Balance   *big.Int // in sun
+	Allowance *big.Int // in sun
+}
+
+func (svc *TronService) GetAccountInfo(userAddr string) (*AccountInfo, error) {
+	acc, err := svc.client.GetAccount(userAddr)
+	if err != nil {
+		return nil, err
+	}
+
+	return &AccountInfo{
+		Address:   userAddr,
+		Type:      int32(acc.GetType()),
+		Balance:   big.NewInt(acc.GetBalance()),
+		Allowance: big.NewInt(acc.GetAllowance()),
+	}, nil
+}
+
 type BalanceResult struct {
 	TokenDecimals *big.Int
 	Symbol        string
