@@ -182,6 +182,15 @@ func (C *Controller) txConfirmation() {
 				// Add receipt
 				// TODO tx is supposed to be confirmed while receipt is returned
 				C.Receipt = txi
+
+				/*
+					receiptRs := txi.Receipt.Result
+					if receiptRs != 1 {
+						// means fail
+					}
+					fmt.Printf("check tx(%s) confirmation, txi.Result=%d, receiptRs=%s\n", txHash, txi.Result, receiptRs)
+				*/
+
 				return
 			}
 			if start < 0 {
