@@ -27,16 +27,15 @@ var testUser = &TestAccount{
 }
 
 func TestAddress(t *testing.T) {
-	s := NewTronService()
 	//ethAddr := "0x418aa06d692d0f98f8d3c24cf9901371b021ef555b"
 	ethAddr := "0x8aa06d692d0f98f8d3c24cf9901371b021ef555b"
-	tronAddr, err := s.ToTronAddress(ethAddr)
+	tronAddr, err := ToTronAddress(ethAddr)
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Logf("tronAddr = %s", tronAddr)
 
-	ethAddr, err = s.ToEthAddress(tronAddr)
+	ethAddr, err = ToEthAddress(tronAddr)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,7 +44,7 @@ func TestAddress(t *testing.T) {
 
 func TestTronService_GetAccontInfo(t *testing.T) {
 	addr := "TRkyRH7YVH59MRxKCpHoTG3M2dGo3Cxccb"
-	svc := NewTronService()
+	svc := NewTronService(false)
 	rs, err := svc.GetAccountInfo(addr)
 	if err != nil {
 		t.Fatal(err)
@@ -55,7 +54,7 @@ func TestTronService_GetAccontInfo(t *testing.T) {
 
 func TestTronService_GetUsdtBalance(t *testing.T) {
 	addr := "TRkyRH7YVH59MRxKCpHoTG3M2dGo3Cxccb"
-	svc := NewTronService()
+	svc := NewTronService(false)
 	rs, err := svc.GetUsdtBalance(addr)
 	if err != nil {
 		t.Fatal(err)
@@ -64,7 +63,7 @@ func TestTronService_GetUsdtBalance(t *testing.T) {
 }
 
 func TestTronService_TransferUsdt(t *testing.T) {
-	svc := NewTronService()
+	svc := NewTronService(false)
 
 	sender := &TxSender{
 		Address:    testSender.Address,
@@ -81,7 +80,7 @@ func TestTronService_TransferUsdt(t *testing.T) {
 }
 
 func TestTronService_TransferTrx(t *testing.T) {
-	svc := NewTronService()
+	svc := NewTronService(false)
 
 	sender := &TxSender{
 		Address:    testSender.Address,

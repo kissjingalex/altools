@@ -9,7 +9,8 @@ import (
 
 // cmd flag values
 var (
-	verbose bool
+	verbose   bool
+	isTestnet bool // if test net
 )
 
 var (
@@ -35,6 +36,7 @@ func init() {
 	initConfig()
 
 	RootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", GlobalConfig.Verbose, "verbose")
+	RootCmd.PersistentFlags().BoolVarP(&isTestnet, "testnet", "t", GlobalConfig.Verbose, "change to testnet")
 }
 
 func initConfig() {
@@ -48,6 +50,7 @@ func initConfig() {
 	GlobalConfig, err = LoadConfig()
 	if err != nil {
 		GlobalConfig.Verbose = false
+		GlobalConfig.TestNet = false
 	}
 }
 

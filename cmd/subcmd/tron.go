@@ -30,8 +30,7 @@ func tronSub() []*cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			addr := args[0]
 
-			svc := tron.NewTronService()
-			targetAddr, err := svc.ToTronAddress(addr)
+			targetAddr, err := tron.ToTronAddress(addr)
 			if err != nil {
 				fmt.Printf("fail to transform to ethereum address, error = %v\n", err)
 				return nil
@@ -48,8 +47,7 @@ func tronSub() []*cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			addr := args[0]
 
-			svc := tron.NewTronService()
-			targetAddr, err := svc.ToEthAddress(addr)
+			targetAddr, err := tron.ToEthAddress(addr)
 			if err != nil {
 				fmt.Printf("fail to transform to tron address, error = %v\n", err)
 				return nil
@@ -66,7 +64,7 @@ func tronSub() []*cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			addr := args[0]
 
-			svc := tron.NewTronService()
+			svc := tron.NewTronService(isTestnet)
 			acc, err := svc.GetAccountInfo(addr)
 			if err != nil {
 				fmt.Printf("fail to get account info for tron address, error = %v\n", err)
@@ -87,7 +85,7 @@ func tronSub() []*cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			addr := args[0]
 
-			svc := tron.NewTronService()
+			svc := tron.NewTronService(isTestnet)
 			rs, err := svc.GetUsdtBalance(addr)
 			if err != nil {
 				fmt.Printf("fail to get account info for tron address, error = %v\n", err)

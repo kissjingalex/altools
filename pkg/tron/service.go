@@ -23,6 +23,7 @@ const (
 
 	connOptsWithTLS = false
 
+	usdtContract       = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
 	usdtContractOnNile = "TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj"
 
 	defaultFeeLimit int64 = 50 * 1000000 // 1trx = 1e6 sun
@@ -30,16 +31,21 @@ const (
 
 type TronService struct {
 	client *client.GrpcClient
+	isTest bool
 }
 
-func NewTronService() *TronService {
+func NewTronService(isTestNet bool) *TronService {
 	service := &TronService{}
-	service.client = newGrpcClient()
+	service.client = newGrpcClient(isTestNet)
 	return service
 }
 
-func newGrpcClient() *client.GrpcClient {
-	conn := client.NewGrpcClient(nodeNile)
+func newGrpcClient(isTestNet bool) *client.GrpcClient {
+	nodeEndPoint := nodeOfficial
+	if isTestNet {
+		nodeEndPoint = nodeNile
+	}
+	conn := client.NewGrpcClient(nodeEndPoint)
 
 	opts := make([]grpc.DialOption, 0)
 	if connOptsWithTLS {
@@ -60,7 +66,7 @@ func newGrpcClient() *client.GrpcClient {
 	return conn
 }
 
-func (svc *TronService) ToTronAddress(addr string) (string, error) {
+func ToTronAddress(addr string) (string, error) {
 	if len(addr) == 0 {
 		return "", errors.New("empty address")
 	}
@@ -71,7 +77,7 @@ func (svc *TronService) ToTronAddress(addr string) (string, error) {
 	return tronAddr.String(), nil
 }
 
-func (svc *TronService) ToEthAddress(addr string) (string, error) {
+func ToEthAddress(addr string) (string, error) {
 	if len(addr) == 0 {
 		return "", errors.New("empty address")
 	}
@@ -184,7 +190,10 @@ func (svc *TronService) TransferTrx(sender *TxSender, userAddr string, value *bi
 }
 
 func (svc *TronService) TransferUsdt(sender *TxSender, userAddr string, value *big.Int) (*TransferResult, error) {
-	contractAddr := usdtContractOnNile
+	contractAddr := usdtContract
+	if svc.isTest {
+		contractAddr = usdtContractOnNile
+	}
 
 	tx, err := svc.client.TRC20Send(sender.Address, userAddr, contractAddr, value, defaultFeeLimit)
 	if err != nil {

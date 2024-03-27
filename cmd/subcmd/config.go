@@ -25,6 +25,7 @@ var (
 // Config defines the config schema
 type Config struct {
 	Verbose bool `yaml:"verbose"`
+	TestNet bool `yaml:"testnet"`
 }
 
 // ReadConfig represents the current config read from local

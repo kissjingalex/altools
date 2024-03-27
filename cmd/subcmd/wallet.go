@@ -105,7 +105,7 @@ func walletSub() []*cobra.Command {
 				return nil
 			}
 
-			tronAddress, err := tron.NewTronService().ToTronAddress(acc.Address)
+			tronAddress, err := tron.ToTronAddress(acc.Address)
 			if err != nil {
 				fmt.Printf("Fail gen convert to tron address, error=%v\n", err)
 				return nil
