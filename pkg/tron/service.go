@@ -37,6 +37,7 @@ type TronService struct {
 func NewTronService(isTestNet bool) *TronService {
 	service := &TronService{}
 	service.client = newGrpcClient(isTestNet)
+	service.isTest = isTestNet
 	return service
 }
 
@@ -187,6 +188,20 @@ func (svc *TronService) TransferTrx(sender *TxSender, userAddr string, value *bi
 	rs := assembleTransferResult(controller, tx, "")
 
 	return rs, nil
+}
+
+func (svc *TronService) GetTxHashForUsdtTransfer(sender *TxSender, userAddr string, value *big.Int) (string, error) {
+	contractAddr := usdtContract
+	if svc.isTest {
+		contractAddr = usdtContractOnNile
+	}
+
+	tx, err := svc.client.TRC20Send(sender.Address, userAddr, contractAddr, value, defaultFeeLimit)
+	if err != nil {
+		return "", err
+	}
+
+	return hexutil.Encode(tx.GetTxid()), nil
 }
 
 func (svc *TronService) TransferUsdt(sender *TxSender, userAddr string, value *big.Int) (*TransferResult, error) {

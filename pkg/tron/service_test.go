@@ -63,12 +63,19 @@ func TestTronService_GetUsdtBalance(t *testing.T) {
 }
 
 func TestTronService_TransferUsdt(t *testing.T) {
-	svc := NewTronService(false)
+	svc := NewTronService(true)
 
 	sender := &TxSender{
 		Address:    testSender.Address,
 		PrivateKey: testSender.PrivateKey,
 	}
+
+	txHash, err := svc.GetTxHashForUsdtTransfer(sender, testUser.Address, big.NewInt(1000000))
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("txHash=%s\n", txHash)
+
 	rs, err := svc.TransferUsdt(sender, testUser.Address, big.NewInt(1000000))
 	if err != nil {
 		t.Fatal(err)
