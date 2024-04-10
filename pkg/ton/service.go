@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	address "github.com/xssnick/tonutils-go/address"
+	"github.com/xssnick/tonutils-go/address"
 	"github.com/xssnick/tonutils-go/liteclient"
 	"github.com/xssnick/tonutils-go/tlb"
 	"github.com/xssnick/tonutils-go/ton"
@@ -129,7 +129,8 @@ func (svc *TonService) CreateWallet(password string) (*Wallet, error) {
 	if hasPsw {
 		w, err = wallet.FromSeedWithPassword(svc.apiClient, seed, password, wallet.V4R2)
 	} else {
-		w, err = wallet.FromSeed(svc.apiClient, seed, wallet.V4R2)
+		//w, err = wallet.FromSeed(svc.apiClient, seed, wallet.V4R2)
+		w, err = wallet.FromSeed(nil, seed, wallet.V4R2)
 	}
 
 	if err != nil {
@@ -181,12 +182,12 @@ func (svc *TonService) getRawWalletFromPrivateKey(privateKey string) (*wallet.Wa
 }
 
 func assembleTonWallet(w *wallet.Wallet, mnemonic string) *Wallet {
-	address := w.WalletAddress()
+	addr := w.WalletAddress()
 	privateKey := hexutil.Encode(w.PrivateKey())
 	return &Wallet{
-		Address:    address.String(),
+		Address:    addr.String(),
 		PrivateKey: privateKey,
-		Type:       int(address.Type()),
+		Type:       int(addr.Type()),
 		Mnemonic:   mnemonic,
 	}
 }

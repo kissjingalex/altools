@@ -48,7 +48,7 @@ func TestTonService_CreateWallet(t *testing.T) {
 }
 
 func TestTonService_GetWalletFromMnemonic(t *testing.T) {
-	mnemonic := "lady midnight guard obvious hill budget car write tunnel lion harvest chicken rural brief human cereal use scatter service rapid typical honey cancel fruit"
+	mnemonic := "push device caught chronic amused glove capable stadium almost dizzy popular morning liberty saddle apology element repeat update smart yellow decorate machine accuse toast"
 	svc := NewTonService(true)
 	w, err := svc.GetWalletFromMnemonic(mnemonic)
 	if err != nil {
