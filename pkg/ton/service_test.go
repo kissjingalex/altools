@@ -1,6 +1,7 @@
 package ton
 
 import (
+	"fmt"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/shopspring/decimal"
 	"math/big"
@@ -25,6 +26,10 @@ var testUser = &TestAccount{
 	Mnemonic:   "impose inflict timber goat uphold trend rare they control cost foot trip give timber bottom token bike cake certain enroll aunt struggle forget organ",
 }
 
+var officialUser = &TestAccount{
+	Address: "",
+}
+
 func TestTon(t *testing.T) {
 	d1 := decimal.NewFromInt(3)
 	d2 := decimal.NewFromInt(1000000)
@@ -34,7 +39,7 @@ func TestTon(t *testing.T) {
 
 func TestTonService_ParseAddress(t *testing.T) {
 	addr := "UQBOpzbphvGUuFf_gFSG4szRGgIgOcrfotk6_vmo2Y33RI6c"
-	info := ParseAddress(addr)
+	info := ParseAddress(addr, false)
 	spew.Dump(info)
 }
 
@@ -76,6 +81,24 @@ func TestTonService_GetBalance(t *testing.T) {
 		t.Fatal(err)
 	}
 	spew.Dump(rs)
+}
+
+func TestTonService_GetBalance_2(t *testing.T) {
+	addr := "UQBrfKhVnuULE1n8LWqfAwEDIAzm5FPzv0K7qZUEb93rLxwB"
+	svc := NewTonService(false)
+	rs, err := svc.GetBalance(addr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	spew.Dump(rs)
+
+	fmt.Println("query one moe time ...")
+	svc2 := NewTonService(false)
+	otherRs, err := svc2.GetBalance(addr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	spew.Dump(otherRs)
 }
 
 func TestTonService_TransferTon(t *testing.T) {

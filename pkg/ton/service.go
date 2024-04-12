@@ -18,7 +18,8 @@ import (
 )
 
 const (
-	configMainNet = "https://ton.org/global.config.json"
+	//configMainNet = "https://ton.org/global.config.json"
+	configMainNet = "https://ton-blockchain.github.io/global.config.json"
 	configTestNet = "https://ton-blockchain.github.io/testnet-global.config.json"
 )
 
@@ -57,7 +58,8 @@ func NewTonService(isTestNet bool) *TonService {
 	apiClient.SetTrustedBlockFromConfig(cfg)
 
 	// bound all requests to single ton node
-	ctx := client.StickyContext(context.Background())
+	//ctx := client.StickyContext(context.Background())
+	ctx := context.Background()
 
 	return &TonService{
 		isTest:     isTestNet,
@@ -77,12 +79,17 @@ type AddressInfo struct {
 	UBAddress    string
 }
 
-func ParseAddress(addr string) *AddressInfo {
-	tonAddr := address.MustParseAddr(addr)
+func ParseAddress(addr string, isRaw bool) *AddressInfo {
+	var tonAddr *address.Address
+	if isRaw {
+		tonAddr = address.MustParseRawAddr(addr)
+	} else {
+		tonAddr = address.MustParseAddr(addr)
+	}
+
 	addrType := tonAddr.Type()
 	chain := tonAddr.Workchain()
 	data := hex.EncodeToString(tonAddr.Data())
-
 	info := &AddressInfo{
 		Type:         int(addrType),
 		Chain:        chain,

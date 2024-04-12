@@ -31,7 +31,20 @@ func tonSub() []*cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			addr := args[0]
 
-			info := ton.ParseAddress(addr)
+			info := ton.ParseAddress(addr, false)
+			PrintAsJson(info)
+			return nil
+		},
+	}
+
+	cmdRawAddress := &cobra.Command{
+		Use:   "rawAddress <address>",
+		Short: "parse ton raw address",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			addr := args[0]
+
+			info := ton.ParseAddress(addr, true)
 			PrintAsJson(info)
 			return nil
 		},
@@ -138,5 +151,5 @@ func tonSub() []*cobra.Command {
 		},
 	}
 
-	return []*cobra.Command{cmdAddress, cmdWallet, cmdWalletM, cmdBalance, cmdSend}
+	return []*cobra.Command{cmdAddress, cmdRawAddress, cmdWallet, cmdWalletM, cmdBalance, cmdSend}
 }
