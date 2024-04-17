@@ -37,6 +37,13 @@ func TestTon(t *testing.T) {
 	t.Logf(d3.String())
 }
 
+func TestCheckConfig(t *testing.T) {
+	err := CheckConfig()
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestTonService_ParseAddress(t *testing.T) {
 	addr := "UQBOpzbphvGUuFf_gFSG4szRGgIgOcrfotk6_vmo2Y33RI6c"
 	info := ParseAddress(addr, false)

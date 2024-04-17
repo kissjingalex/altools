@@ -151,5 +151,34 @@ func tonSub() []*cobra.Command {
 		},
 	}
 
-	return []*cobra.Command{cmdAddress, cmdRawAddress, cmdWallet, cmdWalletM, cmdBalance, cmdSend}
+	cmdJetton := &cobra.Command{
+		Use:   "jetton <privateKeyInHex> <contractAddr>",
+		Short: "get jetton balance for user",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			privateKey := args[0]
+			contractAddr := args[1]
+
+			svc := ton.NewTonService(isTestnet)
+			w, err := svc.GetWalletFromPrivateKey(privateKey)
+			if err != nil {
+				fmt.Printf("Fail to get wallet from private key, error=%v\n", err)
+				return nil
+			}
+
+			rs, err := svc.GetJettonBalance(&ton.TxSender{
+				Address:    w.Address,
+				PrivateKey: w.PrivateKey,
+			}, contractAddr)
+			if err != nil {
+				fmt.Printf("Fail to transfer ton to user, error=%v\n", err)
+				return nil
+			}
+
+			PrintAsJson(rs)
+			return nil
+		},
+	}
+
+	return []*cobra.Command{cmdAddress, cmdRawAddress, cmdWallet, cmdWalletM, cmdBalance, cmdSend, cmdJetton}
 }

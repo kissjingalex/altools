@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -14,6 +15,8 @@ import (
 	"github.com/xssnick/tonutils-go/ton/wallet"
 	"golang.org/x/crypto/ed25519"
 	"math/big"
+	"os"
+	"strconv"
 	"strings"
 )
 
@@ -30,9 +33,7 @@ type TonService struct {
 	ctx        context.Context
 }
 
-func NewTonService(isTestNet bool) *TonService {
-	client := liteclient.NewConnectionPool()
-
+func getConfigFromUrl(isTestNet bool) *liteclient.GlobalConfig {
 	configUrl := configMainNet
 	if isTestNet {
 		configUrl = configTestNet
@@ -46,10 +47,31 @@ func NewTonService(isTestNet bool) *TonService {
 		panic(err)
 	}
 
+	return cfg
+}
+
+func getConfigFromLocal(isTestNet bool) *liteclient.GlobalConfig {
+	configData := clientConfigOfficial
+	if isTestNet {
+		configData = clientConfigTestnet
+	}
+
+	config := &liteclient.GlobalConfig{}
+	if err := json.Unmarshal([]byte(configData), config); err != nil {
+		return nil
+	}
+	return config
+}
+
+func NewTonService(isTestNet bool) *TonService {
+	client := liteclient.NewConnectionPool()
+
+	cfg := getConfigFromLocal(isTestNet)
+
 	// to bound all requests of operation to single node
-	err = client.AddConnectionsFromConfig(context.Background(), cfg)
+	err := client.AddConnectionsFromConfig(context.Background(), cfg)
 	if err != nil {
-		fmt.Printf("fail to add connections from url=%s\n", configUrl)
+		fmt.Printf("fail to add connections")
 		panic(err)
 	}
 
@@ -77,6 +99,34 @@ type AddressInfo struct {
 	IsBounceable bool
 	BAddress     string
 	UBAddress    string
+}
+
+func CheckConfig() error {
+	config := &liteclient.GlobalConfig{}
+
+	configData, err := os.ReadFile("./config.json")
+	if err != nil {
+		return err
+	}
+
+	if err = json.Unmarshal(configData, config); err != nil {
+		return err
+	}
+
+	for _, server := range config.Liteservers {
+		ipStr := intToIP4(server.IP)
+		fmt.Printf("liteServer(%d) = %s\n", server.IP, ipStr)
+	}
+
+	return nil
+}
+
+func intToIP4(ipInt int64) string {
+	b0 := strconv.FormatInt((ipInt>>24)&0xff, 10)
+	b1 := strconv.FormatInt((ipInt>>16)&0xff, 10)
+	b2 := strconv.FormatInt((ipInt>>8)&0xff, 10)
+	b3 := strconv.FormatInt((ipInt & 0xff), 10)
+	return b0 + "." + b1 + "." + b2 + "." + b3
 }
 
 func ParseAddress(addr string, isRaw bool) *AddressInfo {
