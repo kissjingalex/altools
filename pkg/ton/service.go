@@ -329,3 +329,48 @@ func (svc *TonService) TransferTon(sender *TxSender, userAddr string, value *big
 		Balance:    balance.Nano(),
 	}, nil
 }
+
+type TransferBody struct {
+	InMsgHash string
+	Body      []byte
+}
+
+func (svc *TonService) BuildTransferBody(sender *TxSender, userAddr string, value *big.Int) (*TransferBody, error) {
+	w, err := svc.getRawWalletFromPrivateKey(sender.PrivateKey)
+	if err != nil {
+		return nil, err
+	}
+
+	addr := address.MustParseAddr(userAddr)
+
+	// if destination wallet is not initialized (or you don't care)
+	// you should set bounce to false to not get money back.
+	// If bounce is true, money will be returned in case of not initialized destination wallet or smart-contract error
+	bounce := false
+
+	transfer, err := w.BuildTransfer(addr, tlb.MustFromNano(value, 9), bounce, "")
+	if err != nil {
+		fmt.Printf("Transfer error, %v\n", err)
+		return nil, err
+	}
+
+	ext, err := w.BuildExternalMessageForMany(svc.ctx, []*wallet.Message{transfer})
+	if err != nil {
+		fmt.Printf("Transfer error, %v\n", err)
+		return nil, err
+	}
+	inMsgHash := ext.Body.Hash()
+
+	req, err := tlb.ToCell(ext)
+	if err != nil {
+		fmt.Printf("Transfer error, %v\n", err)
+		return nil, err
+	}
+
+	body := req.ToBOCWithFlags(false)
+
+	return &TransferBody{
+		InMsgHash: base64.StdEncoding.EncodeToString(inMsgHash),
+		Body:      body,
+	}, nil
+}

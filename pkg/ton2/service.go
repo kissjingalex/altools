@@ -72,3 +72,13 @@ func (svc *TonService) GetTransaction(txHash string) (*TxInfo, error) {
 		TotalFee: big.NewInt(tx.TotalFees),
 	}, nil
 }
+
+func (svc *TonService) SendMessage(payload []byte) error {
+	ctx := context.Background()
+	_, err := svc.client.SendMessage(ctx, payload)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

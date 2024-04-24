@@ -1,8 +1,10 @@
 package ton
 
 import (
+	"altools/pkg/ton2"
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/shopspring/decimal"
 	"math/big"
 	"testing"
@@ -119,4 +121,24 @@ func TestTonService_TransferTon(t *testing.T) {
 		t.Fatal(err)
 	}
 	spew.Dump(rs)
+}
+
+func TestTonService_TransferTon_2(t *testing.T) {
+	sender := &TxSender{
+		Address:    testSender.Address,
+		PrivateKey: testSender.PrivateKey,
+	}
+	svc := NewTonService(true)
+	body, err := svc.BuildTransferBody(sender, testUser.Address, big.NewInt(100000000))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("inMsgHash=%s", body.InMsgHash)
+	t.Logf("body=%s", hexutil.Encode(body.Body))
+
+	svc2 := ton2.NewTonService(true)
+	err2 := svc2.SendMessage(body.Body)
+	if err != nil {
+		t.Fatal(err2)
+	}
 }
