@@ -1,6 +1,7 @@
 package subcmd
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/spf13/cobra"
@@ -56,5 +57,19 @@ func castSub() []*cobra.Command {
 		},
 	}
 
-	return []*cobra.Command{cmdToHex, cmdFromHex}
+	cmdBase64 := &cobra.Command{
+		Use:   "base64 <content>",
+		Short: "string to base64",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			content := args[0]
+
+			rs := base64.StdEncoding.EncodeToString([]byte(content))
+			fmt.Printf("base64=%s\n", rs)
+
+			return nil
+		},
+	}
+
+	return []*cobra.Command{cmdToHex, cmdFromHex, cmdBase64}
 }
